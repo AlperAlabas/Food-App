@@ -1,0 +1,65 @@
+import React, { useLayoutEffect } from "react";
+import { FlatList, Text, View, TouchableHighlight, Image } from "react-native";
+import styles from "./styles";
+import { recipes } from "../../data/dataArrays";
+import MenuImage from "../../components/MenuImage/MenuImage";
+import { getCategoryName } from "../../data/MockDataAPI";
+import { app } from '../../../Firebase';
+
+
+
+export default function HomeScreen(props) {
+  import('firebase/messaging').then(() => { 
+    const messaging = getMessaging(app);
+    getToken(messaging, { vapidKey: 'BPCPXhJhpnkLloavq11joCF8S6cPPuLP4GgXIB0rFNacYq2FUHJxzZG0lk2uBkgEZm8fifPeMMqpvUCEhNKs82A' }).then((currentToken) => {
+    if (currentToken) {
+      // Send the token to your server and update the UI if necessary
+      // ...
+    } else {
+      // Show permission request UI
+      console.log('No registration token available. Request permission to generate one.');
+      // ...
+    }
+    }).catch((err) => {
+    console.log('An error occurred while retrieving token. ', err);
+    // ...
+    });
+  
+  });
+
+  
+  const { navigation } = props;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => (
+        <MenuImage
+          onPress={() => {
+            navigation.openDrawer();
+          }}
+        />
+      ),
+      headerRight: () => <View />,
+    });
+  }, []);
+
+  const onPressRecipe = (item) => {
+    navigation.navigate("Recipe", { item });
+  };
+
+  const renderRecipes = ({ item }) => (
+    <TouchableHighlight underlayColor="rgba(73,182,77,0.9)" onPress={() => onPressRecipe(item)}>
+      <View style={styles.container}>
+        <Image style={styles.photo} source={{ uri: item.photo_url }} />
+        <Text style={styles.title}>{item.title}</Text>
+        <Text style={styles.category}>{getCategoryName(item.categoryId)}</Text>
+      </View>
+    </TouchableHighlight>
+  );
+
+  return (
+    <View>
+      <FlatList vertical showsVerticalScrollIndicator={false} numColumns={2} data={recipes} renderItem={renderRecipes} keyExtractor={(item) => `${item.recipeId}`} />
+    </View>
+  );
+}
